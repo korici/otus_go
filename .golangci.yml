@@ -65,6 +65,6 @@ linters:
     - typecheck
     - unconvert
     - unparam
-    - unuseds
+    - unused
     - wastedassign
     - whitespace
