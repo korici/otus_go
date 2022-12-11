@@ -36,15 +36,12 @@ func Unpack(unPackStc string) (string, error) {
 				b.Reset()
 				break
 			} else {
-				// раз 0 - ничего не выводим
-				if r == '0' {
-					symb = '-'
-				} else { // значит повторим прошлы символ столько раз, сколько написано
-					for i := 0; i < int(r-'0'); i++ {
-						b.WriteRune(symb)
-					}
-					symb = '-'
+				// значит повторим прошлы символ столько раз, сколько написано
+				// если 0 раз - то ни разу и не сделаем
+				for i := 0; i < int(r-'0'); i++ {
+					b.WriteRune(symb)
 				}
+				symb = '-'
 			}
 		case isEkr == 0:
 			// пришел символ, экранирования нет, просто сохраним
@@ -56,6 +53,10 @@ func Unpack(unPackStc string) (string, error) {
 			// пришло экраниррованное значение, сохраним его
 			symb = r
 			isEkr = 0
+		}
+
+		if err != nil {
+			break
 		}
 	}
 
