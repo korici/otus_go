@@ -65,26 +65,3 @@ func Unpack(unPackStc string) (string, error) {
 
 	return b.String(), nil
 }
-
-/*
-func checkSymb(chksd rune) error {
-	switch {
-	case chksd == '\\':
-		return nil
-	case chksd <= '9':
-		if chksd < '0' {
-			return ErrInvalidString
-		}
-	case chksd <= 'Z':
-		if chksd < 'A' {
-			return ErrInvalidString
-		}
-	case chksd <= 'z' && chksd < 'a':
-		if chksd < 'a' {
-			return ErrInvalidString
-		}
-	}
-
-	return nil
-}
-*/
