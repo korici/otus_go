@@ -3,6 +3,7 @@ package hw02unpackstring
 import (
 	"errors"
 	"strings"
+	"unicode"
 )
 
 var ErrInvalidString = errors.New("invalid string")
@@ -10,88 +11,80 @@ var ErrInvalidString = errors.New("invalid string")
 func Unpack(unPackStc string) (string, error) {
 	isEkr := 0
 	symb := '-'
+	needPrnt := false
+
 	var err error
 	var b strings.Builder
 
 	for _, r := range unPackStc {
-		err = checkSymb(r)
-
-		if err != nil {
-			b.Reset()
-			break
-		}
-
 		switch {
 		case isEkr == 0 && r == '\\':
 			// пришло экранирование, прошлый символ допечатываем если надо
-			if symb != '-' {
+			if needPrnt {
 				b.WriteRune(symb)
 			}
-			symb = '-'
+			needPrnt = false
 			isEkr = 1
-		case isEkr == 0 && r <= '9':
+		case isEkr == 0 && unicode.IsDigit(r):
 			// пришла цифра, надо повторять
-			if symb == '-' { // а повторять нечего - выходим
+			if !needPrnt { // а повторять нечего - выходим
 				err = ErrInvalidString
-				b.Reset()
-				break
-			} else {
-				// значит повторим прошлы символ столько раз, сколько написано
-				// если 0 раз - то ни разу и не сделаем
-				for i := 0; i < int(r-'0'); i++ {
-					b.WriteRune(symb)
-				}
-				symb = '-'
+				return "", err
 			}
+
+			// значит повторим прошлый символ столько раз, сколько написано
+			b.WriteString(strings.Repeat(string(symb), int(r-'0')))
+			needPrnt = false
+
 		case isEkr == 0:
 			// пришел символ, экранирования нет, просто сохраним
-			if symb != '-' {
+			if needPrnt {
 				b.WriteRune(symb)
 			}
 			symb = r
+			needPrnt = true
+
 		case isEkr == 1:
 			// пришло экраниррованное значение, сохраним его
+			if !unicode.IsDigit(r) && r != '\\' {
+				return "", ErrInvalidString
+			}
 			symb = r
 			isEkr = 0
-		}
-
-		if err != nil {
-			break
+			needPrnt = true
 		}
 	}
 
 	if isEkr == 1 { // ошибка что последним пришло экранирование
-		err = ErrInvalidString
-		b.Reset()
+		return "", ErrInvalidString
 	}
 
-	if symb != '-' {
+	if needPrnt {
 		b.WriteRune(symb)
 	}
 
-	return b.String(), err
+	return b.String(), nil
 }
 
+/*
 func checkSymb(chksd rune) error {
-	var err error
 	switch {
 	case chksd == '\\':
-		err = nil
+		return nil
 	case chksd <= '9':
 		if chksd < '0' {
-			err = ErrInvalidString
+			return ErrInvalidString
 		}
 	case chksd <= 'Z':
 		if chksd < 'A' {
-			err = ErrInvalidString
+			return ErrInvalidString
 		}
-	case chksd <= 'z':
+	case chksd <= 'z' && chksd < 'a':
 		if chksd < 'a' {
-			err = ErrInvalidString
+			return ErrInvalidString
 		}
-	default:
-		err = nil
 	}
 
-	return err
+	return nil
 }
+*/
