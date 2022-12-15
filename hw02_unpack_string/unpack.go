@@ -3,29 +3,28 @@ package hw02unpackstring
 import (
 	"errors"
 	"strings"
-	"unicode"
 )
 
 var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(unPackStc string) (string, error) {
-	isEkr := 0
 	symb := '-'
 	needPrnt := false
+	isEkr := false
 
 	var err error
 	var b strings.Builder
 
 	for _, r := range unPackStc {
 		switch {
-		case isEkr == 0 && r == '\\':
+		case !isEkr && r == '\\':
 			// пришло экранирование, прошлый символ допечатываем если надо
 			if needPrnt {
 				b.WriteRune(symb)
 			}
 			needPrnt = false
-			isEkr = 1
-		case isEkr == 0 && unicode.IsDigit(r):
+			isEkr = true
+		case !isEkr && r >= '0' && r <= '9':
 			// пришла цифра, надо повторять
 			if !needPrnt { // а повторять нечего - выходим
 				err = ErrInvalidString
@@ -36,7 +35,7 @@ func Unpack(unPackStc string) (string, error) {
 			b.WriteString(strings.Repeat(string(symb), int(r-'0')))
 			needPrnt = false
 
-		case isEkr == 0:
+		case !isEkr:
 			// пришел символ, экранирования нет, просто сохраним
 			if needPrnt {
 				b.WriteRune(symb)
@@ -44,18 +43,18 @@ func Unpack(unPackStc string) (string, error) {
 			symb = r
 			needPrnt = true
 
-		case isEkr == 1:
+		case isEkr:
 			// пришло экраниррованное значение, сохраним его
-			if !unicode.IsDigit(r) && r != '\\' {
+			if (r > '9' || r < '0') && r != '\\' {
 				return "", ErrInvalidString
 			}
 			symb = r
-			isEkr = 0
+			isEkr = false
 			needPrnt = true
 		}
 	}
 
-	if isEkr == 1 { // ошибка что последним пришло экранирование
+	if isEkr { // ошибка что последним пришло экранирование
 		return "", ErrInvalidString
 	}
 
