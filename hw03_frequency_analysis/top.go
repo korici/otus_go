@@ -1,7 +1,6 @@
 package hw03frequencyanalysis
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 )
@@ -86,7 +85,6 @@ func Top10(text string) []string {
 			Count: value,
 		}
 		wordForSort = append(wordForSort, w)
-		fmt.Println(w.Word, w.Count)
 	}
 
 	sort.Slice(wordForSort, func(i, j int) bool {
