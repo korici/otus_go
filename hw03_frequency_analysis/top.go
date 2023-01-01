@@ -5,72 +5,28 @@ import (
 	"strings"
 )
 
-type TypeWord struct {
-	Word  string
-	Count int
-}
-
 func Top10(text string) []string {
 	wordsM := map[string]int{}
 
 	allWords := strings.Fields(text)
 	allWords2 := []string{}
 
+	f := func(c rune) bool {
+		return c == '.' || c == ',' || c == '!' || c == '?' || c == ':' || c == ';' || c == '"'
+	}
+
 	for _, w := range allWords {
-		s := strings.Split(w, ".")
+		s := strings.FieldsFunc(w, f)
 		allWords2 = append(allWords2, s...)
 	}
 
-	allWords = nil
-
-	for _, w := range allWords2 {
-		s := strings.Split(w, ",")
-		allWords = append(allWords, s...)
-	}
-
-	allWords2 = nil
-
-	for _, w := range allWords {
-		s := strings.Split(w, "!")
-		allWords2 = append(allWords2, s...)
-	}
-
-	allWords = nil
-
-	for _, w := range allWords2 {
-		s := strings.Split(w, "?")
-		allWords = append(allWords, s...)
-	}
-
-	allWords2 = nil
-
-	for _, w := range allWords {
-		s := strings.Split(w, ":")
-		allWords2 = append(allWords2, s...)
-	}
-
-	allWords = nil
-
-	for _, w := range allWords2 {
-		s := strings.Split(w, ";")
-		allWords = append(allWords, s...)
-	}
-
-	allWords2 = nil
-
-	for _, w := range allWords {
-		s := strings.Split(w, "\"")
-		allWords2 = append(allWords2, s...)
-	}
-
-	if len(allWords) == 0 {
+	if len(allWords2) == 0 {
 		return nil
 	}
 
-	for _, s := range allWords {
+	for _, s := range allWords2 {
 		if s != "-" && s != "" {
-			i := wordsM[strings.ToLower(s)]
-			wordsM[strings.ToLower(s)] = i + 1
+			wordsM[strings.ToLower(s)]++
 		}
 	}
 
@@ -78,31 +34,23 @@ func Top10(text string) []string {
 		return nil
 	}
 
-	wordForSort := []TypeWord{}
-	for key, value := range wordsM {
-		w := TypeWord{
-			Word:  key,
-			Count: value,
-		}
-		wordForSort = append(wordForSort, w)
+	words := make([]string, 0, len(wordsM))
+
+	for key := range wordsM {
+		words = append(words, key)
 	}
 
-	sort.Slice(wordForSort, func(i, j int) bool {
-		if wordForSort[i].Count == wordForSort[j].Count {
-			return wordForSort[i].Word < wordForSort[j].Word
+	sort.Slice(words, func(i, j int) bool {
+		if wordsM[words[i]] == wordsM[words[j]] {
+			return words[i] < words[j]
 		}
-		return wordForSort[i].Count > wordForSort[j].Count
+		return wordsM[words[i]] > wordsM[words[j]]
 	})
 
-	words := []string{}
-	l := 10
-	if len(wordForSort) < l {
-		l = len(wordForSort)
+	countOut := 10
+	if len(words) < countOut {
+		countOut = len(words)
 	}
 
-	for i := 0; i < l; i++ {
-		words = append(words, wordForSort[i].Word)
-	}
-
-	return words
+	return words[:countOut]
 }
